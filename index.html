@@ -209,8 +209,9 @@
   let cinematicTimer = 0;
   let cinematicStep = 0;
   let verity;
+  let exitPosition = null;
+  let isTransitioning = false;
 
-  // Algoritmo BFS para calcular la distancia más corta desde cualquier celda hasta la salida
   function computeDistancesToExit(map) {
     const dist = Array.from({ length: map.length }, () => Array(map[0].length).fill(Infinity));
     const queue = [];
@@ -243,7 +244,6 @@
     return dist;
   }
 
-  // Textura de señal de salida con flecha verde
   function createExitArrowTexture() {
     const canvas = document.createElement('canvas');
     canvas.width = 256; canvas.height = 256;
@@ -409,11 +409,13 @@
     levelMeshes = [];
     wallColliders = [];
     lights = [];
+    exitPosition = null;
   }
 
   function loadLevel(levelNum) {
     clearLevel();
     currentLevel = levelNum;
+    isTransitioning = false;
     let map = MAP_LEVEL_0;
     const hud = document.getElementById('level-hud');
 
@@ -492,19 +494,26 @@
         } else if (map[r][c] === 2) {
           camera.position.set(x, 1.6, z);
         } else if (map[r][c] === 3) {
-          const exitColor = currentLevel === 0 ? 0xef4444 : (currentLevel === 1 ? 0x38bdf8 : 0x22c55e);
-          const exitMat = new THREE.MeshStandardMaterial({ color: exitColor, emissive: exitColor, emissiveIntensity: 2.0 });
-          const exitWall = new THREE.Mesh(wallGeo, exitMat);
-          exitWall.position.set(x, 1.75, z);
-          scene.add(exitWall); levelMeshes.push(exitWall);
-          wallColliders.push(new THREE.Box3().setFromObject(exitWall));
+          exitPosition = new THREE.Vector3(x, 1.6, z);
 
-          const exitLight = new THREE.PointLight(exitColor, 3.0, 18);
+          // Portal pasable (sin colisiones sólidas)
+          const exitColor = currentLevel === 0 ? 0xef4444 : (currentLevel === 1 ? 0x38bdf8 : 0x22c55e);
+          const exitMat = new THREE.MeshStandardMaterial({ 
+            color: exitColor, 
+            emissive: exitColor, 
+            emissiveIntensity: 1.5,
+            transparent: true,
+            opacity: 0.75 
+          });
+          const exitPortal = new THREE.Mesh(new THREE.BoxGeometry(CELL_SIZE * 0.9, 3.5, CELL_SIZE * 0.9), exitMat);
+          exitPortal.position.set(x, 1.75, z);
+          scene.add(exitPortal); levelMeshes.push(exitPortal);
+
+          const exitLight = new THREE.PointLight(exitColor, 4.0, 20);
           exitLight.position.set(x, 1.8, z);
           scene.add(exitLight); lights.push(exitLight);
         }
 
-        // Colocación estratégica de señales de salida en el suelo
         if ((map[r][c] === 0 || map[r][c] === 2) && (r + c) % 2 === 0) {
           let minDist = exitDistances[r][c];
           let bestR = r, bestC = c;
@@ -871,11 +880,9 @@
         endGame(false);
       }
 
-      const map = currentLevel === 0 ? MAP_LEVEL_0 : (currentLevel === 1 ? MAP_LEVEL_1 : MAP_LEVEL_2);
-      const playerGridX = Math.floor(camera.position.x / CELL_SIZE);
-      const playerGridZ = Math.floor(camera.position.z / CELL_SIZE);
-
-      if (map[playerGridZ] && map[playerGridZ][playerGridX] === 3) {
+      // Detector de proximidad a la salida
+      if (exitPosition && !isTransitioning && camera.position.distanceTo(exitPosition) < 2.2) {
+        isTransitioning = true;
         if (currentLevel === 0) {
           showWin11Loading("Cargando Nivel 1...", () => loadLevel(1));
         } else if (currentLevel === 1) {
