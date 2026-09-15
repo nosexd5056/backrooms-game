@@ -72,13 +72,15 @@
       margin-top: 25px; font-size: 18px; color: #ffffff; letter-spacing: 1px; font-weight: 400;
     }
 
+    /* Subtítulos de Cinemática */
     #subtitles {
       position: fixed; bottom: 12%; left: 50%; transform: translateX(-50%);
       background: rgba(0, 0, 0, 0.85); color: #fff; padding: 12px 24px; font-size: 20px;
       border-radius: 8px; display: none; z-index: 80; border: 1px solid rgba(255,255,255,0.2);
-      font-weight: 600; letter-spacing: 0.5px;
+      font-weight: 600; letter-spacing: 0.5px; text-align: center;
     }
 
+    /* Fundido a Negro y Final con Créditos */
     #fade-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: #000; opacity: 0; pointer-events: none; z-index: 90;
@@ -87,12 +89,18 @@
     #continued-screen {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       display: none; flex-direction: column; justify-content: center; align-items: center;
-      z-index: 110; color: #fff; text-align: center; background: #000;
+      z-index: 110; color: #fff; text-align: center; background: #000; overflow: hidden;
     }
     .tbc-text {
-      font-size: 52px; font-weight: 800; letter-spacing: 8px; text-transform: uppercase;
-      color: #ef4444; text-shadow: 0 0 20px rgba(239, 68, 68, 0.8); margin-bottom: 30px;
+      font-size: 48px; font-weight: 800; letter-spacing: 8px; text-transform: uppercase;
+      color: #ef4444; text-shadow: 0 0 20px rgba(239, 68, 68, 0.8); margin-bottom: 25px;
     }
+    .credits-box {
+      margin-bottom: 30px; font-size: 16px; color: #a1a1aa; line-height: 1.8;
+      border-top: 1px solid rgba(255,255,255,0.15); border-bottom: 1px solid rgba(255,255,255,0.15);
+      padding: 15px 40px; background: rgba(255,255,255,0.03); border-radius: 8px;
+    }
+    .credits-box h3 { color: #38bdf8; font-size: 18px; margin-bottom: 8px; letter-spacing: 2px; }
 
     #overlay-msg {
       position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -120,10 +128,16 @@
 <!-- Subtítulos de Cinemática -->
 <div id="subtitles"></div>
 
-<!-- Fundido a Negro y Final -->
+<!-- Fundido a Negro y Pantalla Final -->
 <div id="fade-overlay"></div>
 <div id="continued-screen">
   <div class="tbc-text">CONTINUARÁ...</div>
+  <div class="credits-box">
+    <h3>CRÉDITOS</h3>
+    <p><b>Desarrollo & Diseño:</b> Proyecto Backrooms Web</p>
+    <p><b>Motor 3D:</b> Three.js (WebGL)</p>
+    <p><b>Niveles:</b> 0 (Lobby), 1 (Zona Habitable), 2 (Túneles), 3 (¿La Isla?)</p>
+  </div>
   <button class="btn" onclick="location.reload()">JUGAR DE NUEVO</button>
 </div>
 
@@ -258,6 +272,25 @@
     return texture;
   }
 
+  function createSignTexture(text) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512; canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(0, 0, 512, 128);
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(8, 8, 496, 112);
+    
+    ctx.fillStyle = '#f87171';
+    ctx.font = 'bold 36px Segoe UI, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, 256, 64);
+
+    return new THREE.CanvasTexture(canvas);
+  }
+
   function init() {
     scene = new THREE.Scene();
 
@@ -358,7 +391,7 @@
       ambientLight.intensity = 0.12;
       hud.textContent = "NIVEL 2: Túneles de Mantenimiento";
       hud.style.color = "#f87171";
-      monsterSpeed = 2.7; // Balanceado: más lento que el esprint del jugador
+      monsterSpeed = 2.7;
 
       wallMat = new THREE.MeshStandardMaterial({ color: 0x2d1919, roughness: 0.4 });
       floorMat = wallMat;
@@ -390,7 +423,6 @@
         } else if (map[r][c] === 2) {
           camera.position.set(x, 1.6, z);
         } else if (map[r][c] === 3) {
-          // Salida con gran brillo para visualizarla a lo lejos
           const exitColor = currentLevel === 0 ? 0xef4444 : (currentLevel === 1 ? 0x38bdf8 : 0x22c55e);
           const exitMat = new THREE.MeshStandardMaterial({ color: exitColor, emissive: exitColor, emissiveIntensity: 2.0 });
           const exitWall = new THREE.Mesh(wallGeo, exitMat);
@@ -398,7 +430,6 @@
           scene.add(exitWall); levelMeshes.push(exitWall);
           wallColliders.push(new THREE.Box3().setFromObject(exitWall));
 
-          // Luz guía de la salida
           const exitLight = new THREE.PointLight(exitColor, 3.0, 18);
           exitLight.position.set(x, 1.8, z);
           scene.add(exitLight); lights.push(exitLight);
@@ -437,7 +468,6 @@
     eye2.position.set(0.08, 2.6, 0.1);
     monster.add(eye1, eye2);
 
-    // Posición inicial del monstruo (más distante en Nivel 2)
     if (currentLevel === 2) {
       monster.position.set(CELL_SIZE * 2, 0, CELL_SIZE * 9);
     } else {
@@ -477,6 +507,7 @@
     return false;
   }
 
+  // CINEMÁTICA CON CAÍDA Y REVELACIÓN DE LA ISLA DE EPSTEIN
   function startLevel3Cinematic() {
     inCinematic = true;
     controls.unlock();
@@ -487,11 +518,14 @@
     document.getElementById('level-hud').textContent = "NIVEL 3: Estación de Maquinaria";
     document.getElementById('level-hud').style.color = "#a855f7";
 
+    // Pasillo con Agujero al final
     const wallMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 100), wallMat);
-    floor.rotation.x = -Math.PI / 2;
-    floor.position.set(0, 0, -40);
-    scene.add(floor); levelMeshes.push(floor);
+    
+    // Suelo con un hueco
+    const floor1 = new THREE.Mesh(new THREE.PlaneGeometry(10, 20), wallMat);
+    floor1.rotation.x = -Math.PI / 2;
+    floor1.position.set(0, 0, -10);
+    scene.add(floor1); levelMeshes.push(floor1);
 
     const light = new THREE.PointLight(0xa855f7, 2, 25);
     light.position.set(0, 3, -10);
@@ -501,10 +535,87 @@
     camera.rotation.set(0, 0, 0);
 
     createMonster();
-    monster.position.set(0, 0, -35);
+    monster.position.set(0, 0, -18);
 
     cinematicStep = 1;
     cinematicTimer = performance.now();
+  }
+
+  function buildEpsteinIslandScene() {
+    clearLevel();
+
+    scene.background = new THREE.Color(0x38bdf8); // Cielo azul tropical
+    scene.fog = new THREE.FogExp2(0x7dd3fc, 0.015);
+
+    ambientLight.color.setHex(0xffffff);
+    ambientLight.intensity = 0.8;
+
+    const sun = new THREE.DirectionalLight(0xfffaed, 1.2);
+    sun.position.set(20, 40, 20);
+    scene.add(sun); lights.push(sun);
+
+    // Mar
+    const ocean = new THREE.Mesh(
+      new THREE.PlaneGeometry(300, 300),
+      new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.1, metalness: 0.3 })
+    );
+    ocean.rotation.x = -Math.PI / 2;
+    ocean.position.y = -0.5;
+    scene.add(ocean); levelMeshes.push(ocean);
+
+    // Isla de Arena
+    const island = new THREE.Mesh(
+      new THREE.CylinderGeometry(25, 35, 3, 32),
+      new THREE.MeshStandardMaterial({ color: 0xfde047, roughness: 0.9 })
+    );
+    island.position.set(0, -1.5, 0);
+    scene.add(island); levelMeshes.push(island);
+
+    // Mansión/Templo al fondo de la isla
+    const buildingGroup = new THREE.Group();
+    const wallMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.5 });
+    const blueDomeMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.3 });
+
+    const baseBuilding = new THREE.Mesh(new THREE.BoxGeometry(12, 6, 12), wallMat);
+    baseBuilding.position.set(0, 3, 0);
+
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(4, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2), blueDomeMat);
+    dome.position.set(0, 6, 0);
+
+    buildingGroup.add(baseBuilding, dome);
+    buildingGroup.position.set(0, 0, -20);
+    scene.add(buildingGroup); levelMeshes.push(buildingGroup);
+
+    // Cartel "ISLA DE EPSTEIN"
+    const signTex = createSignTexture("ISLA DE EPSTEIN");
+    const signMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(8, 2),
+      new THREE.MeshStandardMaterial({ map: signTex, side: THREE.DoubleSide })
+    );
+    signMesh.position.set(0, 3.5, -10);
+    scene.add(signMesh); levelMeshes.push(signMesh);
+
+    // Postes del cartel
+    const poleMat = new THREE.MeshStandardMaterial({ color: 0x475569 });
+    const pole1 = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 3), poleMat);
+    pole1.position.set(-3.5, 1.5, -10);
+    const pole2 = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 3), poleMat);
+    pole2.position.set(3.5, 1.5, -10);
+    scene.add(pole1, pole2); levelMeshes.push(pole1, pole2);
+
+    // Palmeras
+    for (let i = 0; i < 5; i++) {
+      const palm = new THREE.Group();
+      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 5), new THREE.MeshStandardMaterial({ color: 0x78350f }));
+      trunk.position.y = 2.5;
+      const leaves = new THREE.Mesh(new THREE.ConeGeometry(3, 1.5, 6), new THREE.MeshStandardMaterial({ color: 0x15803d }));
+      leaves.position.y = 5;
+      palm.add(trunk, leaves);
+
+      const angle = (i / 5) * Math.PI * 2;
+      palm.position.set(Math.cos(angle) * 16, 0, Math.sin(angle) * 16 - 5);
+      scene.add(palm); levelMeshes.push(palm);
+    }
   }
 
   function updateCinematic(delta) {
@@ -515,34 +626,67 @@
       subtitles.style.display = 'block';
       subtitles.textContent = "Personaje: ¿En dónde estoy...?";
       
-      if (elapsed > 2.5) {
+      if (elapsed > 2.0) {
         cinematicStep = 2;
         cinematicTimer = performance.now();
       }
     } else if (cinematicStep === 2) {
       subtitles.textContent = "Personaje: ¡¿PERO QUÉ ES ESO?!";
-      monster.position.z += 18 * delta;
+      monster.position.z += 12 * delta;
 
-      if (monster.position.z > -12) {
+      if (monster.position.z > -6) {
         cinematicStep = 3;
         cinematicTimer = performance.now();
       }
     } else if (cinematicStep === 3) {
+      // Huida hacia atrás y caída en agujero
       subtitles.textContent = "Personaje: ¡AAAAHHH!";
       camera.rotation.y = THREE.MathUtils.lerp(camera.rotation.y, Math.PI, 0.1);
-      camera.position.z += 12 * delta;
-      monster.position.z += 14 * delta;
+      camera.position.z += 10 * delta;
 
-      camera.position.y = 1.6 + Math.sin(performance.now() * 0.015) * 0.15;
-
-      if (elapsed > 2.0) {
-        document.getElementById('fade-overlay').style.opacity = '1';
+      // Al cruzar el borde del suelo (z > 3), se cae en el agujero
+      if (camera.position.z > 3.0) {
+        cinematicStep = 4;
+        cinematicTimer = performance.now();
+      }
+    } else if (cinematicStep === 4) {
+      // Caída libre por el agujero
+      subtitles.textContent = "Personaje: ¡¡¡ME CAIGOOO!!!";
+      camera.position.y -= 35 * delta;
+      
+      if (elapsed > 0.6) {
+        document.getElementById('fade-overlay').style.opacity = '1'; // Pantalla negra rápida
       }
 
-      if (elapsed > 3.8) {
+      if (elapsed > 1.5) {
+        // Aterrizaje en la isla
+        buildEpsteinIslandScene();
+        camera.position.set(0, 1.6, 12); // Mirando hacia afuera al mar inicialmente
+        camera.rotation.set(0, Math.PI, 0); 
+        document.getElementById('fade-overlay').style.opacity = '0'; // Reaparece el día en la isla
+        cinematicStep = 5;
+        cinematicTimer = performance.now();
+      }
+    } else if (cinematicStep === 5) {
+      subtitles.textContent = "Personaje: ¿Una isla...? ¿Dónde caí?";
+
+      if (elapsed > 2.2) {
+        cinematicStep = 6;
+        cinematicTimer = performance.now();
+      }
+    } else if (cinematicStep === 6) {
+      // Giros de cámara para revelar el cartel de la Isla de Epstein
+      subtitles.textContent = "Personaje: Espera... ¡No puede ser!";
+      camera.rotation.y = THREE.MathUtils.lerp(camera.rotation.y, 0, 0.05);
+
+      if (elapsed > 3.5) {
+        document.getElementById('fade-overlay').style.opacity = '1'; // Fundido a negro final
+      }
+
+      if (elapsed > 5.0) {
         subtitles.style.display = 'none';
-        document.getElementById('continued-screen').style.display = 'flex';
-        cinematicStep = 4;
+        document.getElementById('continued-screen').style.display = 'flex'; // Pantalla "Continuará" y Créditos
+        cinematicStep = 7;
       }
     }
   }
@@ -589,7 +733,6 @@
         l.intensity = Math.random() < 0.4 ? 0.0 : 1.0;
       }
 
-      // Movimiento suave del monstruo en función del tiempo
       monster.lookAt(camera.position.x, 0, camera.position.z);
       monster.translateZ(monsterSpeed * delta);
 
