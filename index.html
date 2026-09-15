@@ -208,7 +208,72 @@
   let inCinematic = false;
   let cinematicTimer = 0;
   let cinematicStep = 0;
-  let verity; // Personaje Verity (Bolita amarilla)
+  let verity;
+
+  // Algoritmo BFS para calcular la distancia más corta desde cualquier celda hasta la salida
+  function computeDistancesToExit(map) {
+    const dist = Array.from({ length: map.length }, () => Array(map[0].length).fill(Infinity));
+    const queue = [];
+    
+    for (let r = 0; r < map.length; r++) {
+      for (let c = 0; c < map[r].length; c++) {
+        if (map[r][c] === 3) {
+          dist[r][c] = 0;
+          queue.push({ r, c });
+        }
+      }
+    }
+
+    const dr = [-1, 1, 0, 0];
+    const dc = [0, 0, -1, 1];
+
+    while (queue.length > 0) {
+      const { r, c } = queue.shift();
+      for (let i = 0; i < 4; i++) {
+        const nr = r + dr[i];
+        const nc = c + dc[i];
+        if (nr >= 0 && nr < map.length && nc >= 0 && nc < map[nr].length && map[nr][nc] !== 1) {
+          if (dist[nr][nc] > dist[r][c] + 1) {
+            dist[nr][nc] = dist[r][c] + 1;
+            queue.push({ r: nr, c: nc });
+          }
+        }
+      }
+    }
+    return dist;
+  }
+
+  // Textura de señal de salida con flecha verde
+  function createExitArrowTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256; canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    
+    ctx.fillStyle = 'rgba(6, 95, 70, 0.85)';
+    ctx.fillRect(0, 0, 256, 256);
+    ctx.strokeStyle = '#34d399';
+    ctx.lineWidth = 10;
+    ctx.strokeRect(8, 8, 240, 240);
+
+    ctx.fillStyle = '#34d399';
+    ctx.beginPath();
+    ctx.moveTo(128, 25);
+    ctx.lineTo(205, 115);
+    ctx.lineTo(160, 115);
+    ctx.lineTo(160, 185);
+    ctx.lineTo(96, 185);
+    ctx.lineTo(96, 115);
+    ctx.lineTo(51, 115);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 28px Segoe UI, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('SALIDA', 128, 225);
+
+    return new THREE.CanvasTexture(canvas);
+  }
 
   function createWallpaperTexture() {
     const canvas = document.createElement('canvas');
@@ -409,6 +474,11 @@
     ceiling.position.set((map[0].length * CELL_SIZE)/2, 3.5, (map.length * CELL_SIZE)/2);
     scene.add(ceiling); levelMeshes.push(ceiling);
 
+    const exitDistances = computeDistancesToExit(map);
+    const exitArrowTex = createExitArrowTexture();
+    const dr = [-1, 1, 0, 0];
+    const dc = [0, 0, -1, 1];
+
     for (let r = 0; r < map.length; r++) {
       for (let c = 0; c < map[r].length; c++) {
         const x = c * CELL_SIZE + CELL_SIZE/2;
@@ -432,6 +502,44 @@
           const exitLight = new THREE.PointLight(exitColor, 3.0, 18);
           exitLight.position.set(x, 1.8, z);
           scene.add(exitLight); lights.push(exitLight);
+        }
+
+        // Colocación estratégica de señales de salida en el suelo
+        if ((map[r][c] === 0 || map[r][c] === 2) && (r + c) % 2 === 0) {
+          let minDist = exitDistances[r][c];
+          let bestR = r, bestC = c;
+
+          for (let i = 0; i < 4; i++) {
+            const nr = r + dr[i];
+            const nc = c + dc[i];
+            if (nr >= 0 && nr < map.length && nc >= 0 && nc < map[nr].length && map[nr][nc] !== 1) {
+              if (exitDistances[nr][nc] < minDist) {
+                minDist = exitDistances[nr][nc];
+                bestR = nr;
+                bestC = nc;
+              }
+            }
+          }
+
+          if (bestR !== r || bestC !== c) {
+            const arrowGeo = new THREE.PlaneGeometry(1.5, 1.5);
+            const arrowMat = new THREE.MeshStandardMaterial({ 
+              map: exitArrowTex, 
+              transparent: true, 
+              emissive: 0x34d399, 
+              emissiveIntensity: 0.6 
+            });
+            const arrowMesh = new THREE.Mesh(arrowGeo, arrowMat);
+            arrowMesh.rotation.x = -Math.PI / 2;
+            
+            const dx = (bestC * CELL_SIZE + CELL_SIZE/2) - x;
+            const dz = (bestR * CELL_SIZE + CELL_SIZE/2) - z;
+            arrowMesh.rotation.z = Math.atan2(-dx, -dz);
+            
+            arrowMesh.position.set(x, 0.02, z);
+            scene.add(arrowMesh);
+            levelMeshes.push(arrowMesh);
+          }
         }
 
         if (map[r][c] !== 1 && Math.random() < 0.2) {
@@ -613,7 +721,6 @@
       scene.add(palm); levelMeshes.push(palm);
     }
 
-    // CREACIÓN DE VERITY (Bolita amarilla brillante)
     const verityGeo = new THREE.SphereGeometry(0.6, 32, 32);
     const verityMat = new THREE.MeshStandardMaterial({ 
       color: 0xffea00, 
@@ -623,13 +730,11 @@
     });
     verity = new THREE.Mesh(verityGeo, verityMat);
     
-    // Luz amarilla propia que ilumina alrededor
     const verityLight = new THREE.PointLight(0xffea00, 3, 12);
     verity.add(verityLight);
     
-    // Ubicación: Enfrente de donde quedará la cámara al voltear
     verity.position.set(0, 1.8, 7);
-    verity.visible = false; // Se hace visible solo cuando el personaje voltea
+    verity.visible = false;
     scene.add(verity); levelMeshes.push(verity);
   }
 
@@ -639,6 +744,7 @@
 
     if (cinematicStep === 1) {
       subtitles.style.display = 'block';
+      subtitles.style.color = '#fff';
       subtitles.textContent = "Personaje: ¿En dónde estoy...?";
       
       if (elapsed > 2.0) {
@@ -689,19 +795,18 @@
         cinematicTimer = performance.now();
       }
     } else if (cinematicStep === 6) {
-      // El personaje voltea la cámara
       camera.rotation.y = THREE.MathUtils.lerp(camera.rotation.y, 0, 0.04);
       
-      // Verity aparece y flota suavemente
       if (verity) {
         verity.visible = true;
         verity.position.y = 1.8 + Math.sin(performance.now() * 0.004) * 0.25;
       }
 
       if (elapsed < 1.8) {
+        subtitles.style.color = '#fff';
         subtitles.textContent = "Personaje: Espera... ¿Qué es esa luz?";
       } else {
-        subtitles.style.color = "#fef08a"; // Color amarillo suave para los subtítulos de Verity
+        subtitles.style.color = '#fef08a';
         subtitles.textContent = "Verity: Hola amigo, bienvenido a la isla de Jeffrey.";
       }
 
