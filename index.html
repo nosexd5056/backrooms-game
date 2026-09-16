@@ -23,22 +23,18 @@
       border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px);
     }
 
-    /* Indicador Guía de Salida */
-    #navigation-arrow {
-      position: absolute; top: 20px; right: 20px;
-      display: none; flex-direction: column; align-items: center;
-      color: #22c55e; font-weight: bold; z-index: 10;
-      background: rgba(0, 0, 0, 0.75); padding: 8px 14px;
-      border-radius: 8px; border: 1px solid rgba(34, 197, 94, 0.4);
-      backdrop-filter: blur(4px);
+    /* Indicador de Objetivo en Texto */
+    #text-objective {
+      position: absolute; top: 65px; left: 20px;
+      font-size: 13px; color: #4ade80; z-index: 10; font-weight: 600;
+      background: rgba(0,0,0,0.75); padding: 6px 12px; border-radius: 6px;
+      border: 1px solid rgba(74, 222, 128, 0.3); max-width: 320px;
     }
 
-    #arrow-icon {
-      font-size: 26px; transition: transform 0.1s ease-out; transform-origin: center;
-    }
-
-    #arrow-dist {
-      font-size: 11px; color: #a1a1aa; margin-top: 2px;
+    #flashlight-hint {
+      position: absolute; bottom: 20px; right: 20px;
+      font-size: 12px; color: #a1a1aa; z-index: 10;
+      background: rgba(0,0,0,0.6); padding: 6px 12px; border-radius: 4px;
     }
 
     #interaction-hint {
@@ -48,27 +44,21 @@
       border: 1px solid #eab308; display: none; text-align: center;
     }
 
-    #flashlight-hint {
-      position: absolute; top: 60px; left: 20px;
-      font-size: 13px; color: #a1a1aa; z-index: 10;
-      background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 4px;
-    }
-
     #limbo-menu {
       position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
       background: radial-gradient(circle, #1e1b4b 0%, #09090b 100%); display: flex;
       flex-direction: column; justify-content: center; align-items: center;
-      z-index: 20; text-align: center;
+      z-index: 20; text-align: center; padding: 20px; overflow-y: auto;
     }
 
-    h1 { font-size: 42px; color: #c084fc; text-shadow: 0 0 15px rgba(192, 132, 252, 0.6); margin-bottom: 10px; letter-spacing: 2px; }
-    p { font-size: 15px; color: #a1a1aa; margin-bottom: 25px; max-width: 550px; line-height: 1.5; }
+    h1 { font-size: 38px; color: #c084fc; text-shadow: 0 0 15px rgba(192, 132, 252, 0.6); margin-bottom: 8px; letter-spacing: 2px; }
+    p { font-size: 14px; color: #a1a1aa; margin-bottom: 20px; max-width: 550px; line-height: 1.4; }
 
     .level-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; max-width: 600px;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; max-width: 600px; width: 100%;
     }
     .level-btn {
-      padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
+      padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
       color: #fff; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s;
     }
     .level-btn:hover:not(:disabled) { background: #6d28d9; border-color: #a855f7; transform: translateY(-2px); }
@@ -77,10 +67,20 @@
 
     .btn {
       padding: 12px 28px; background: #6d28d9; color: #fff; font-weight: bold;
-      font-size: 16px; border: none; cursor: pointer; border-radius: 6px;
-      transition: 0.2s; box-shadow: 0 4px 15px rgba(109, 40, 217, 0.4);
+      font-size: 15px; border: none; cursor: pointer; border-radius: 6px;
+      transition: 0.2s; box-shadow: 0 4px 15px rgba(109, 40, 217, 0.4); margin: 4px;
     }
     .btn:hover { background: #7c3aed; transform: scale(1.03); }
+
+    /* Panel Guía de Texto */
+    #guide-panel {
+      max-width: 600px; width: 100%; background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 8px;
+      padding: 15px; text-align: left; margin-bottom: 15px; font-size: 13px; color: #d4d4d8;
+    }
+    #guide-panel h3 { color: #fef08a; margin-bottom: 8px; font-size: 15px; display: flex; align-items: center; justify-content: space-between; }
+    #guide-panel ul { padding-left: 18px; line-height: 1.6; }
+    #guide-panel li { margin-bottom: 6px; }
 
     #stamina-bar-bg {
       position: absolute; bottom: 20px; left: 20px; width: 200px; height: 10px;
@@ -139,13 +139,9 @@
 <div id="canvas-container"></div>
 <div id="crosshair"></div>
 <div id="level-hud">MENÚ LIMBO</div>
+<div id="text-objective">Guía: Camina hacia la esquina inferior derecha.</div>
 
-<div id="navigation-arrow">
-  <div id="arrow-icon">▲</div>
-  <span id="arrow-dist">0m</span>
-</div>
-
-<div id="flashlight-hint">💡 Tecla [F] Linterna | [Shift] Correr | [E] Interactuar | [0-5] Saltar Nivel</div>
+<div id="flashlight-hint">💡 [F] Linterna | [Shift] Correr | [E] Interactuar | [G] Ocultar Pista</div>
 <div id="interaction-hint">Presiona [E] para interactuar</div>
 <div id="stamina-bar-bg"><div id="stamina-bar"></div></div>
 
@@ -170,7 +166,7 @@
 
 <div id="limbo-menu">
   <h1>MENÚ DE LIMBO</h1>
-  <p>Selecciona un nivel o continúa tu viaje a través de la realidad fracturada.</p>
+  <p>Selecciona un nivel o consulta la guía escrita de navegación.</p>
   
   <div class="level-grid">
     <button class="level-btn" id="btn-lvl-0" onclick="selectLevel(0)">Nivel 0<br><small>El Lobby</small></button>
@@ -181,8 +177,22 @@
     <button class="level-btn" id="btn-lvl-5" onclick="selectLevel(5)">Nivel 5<br><small>Poolrooms</small></button>
   </div>
 
-  <button class="btn" id="start-btn" onclick="startSelectedLevel()">ENTRAR AL NIVEL</button>
-  <button class="btn" onclick="resetProgress()" style="margin-top: 15px; background: #3f3f46; font-size: 13px;">RESETEAR PROGRESO</button>
+  <div id="guide-panel">
+    <h3>📖 GUÍA ESCRITA PARA LLEGAR A LA SALIDA DE CADA NIVEL</h3>
+    <ul>
+      <li><b>Nivel 0 (Lobby):</b> Camina hacia la esquina inferior derecha del mapa. El portal es un bloque verde brillante.</li>
+      <li><b>Nivel 1 (Zona Habitable):</b> Ve hasta el fondo por el lado inferior izquierdo atravesando el pasillo de concreto.</li>
+      <li><b>Nivel 2 (Túneles):</b> Recorre el túnel rojo esquivando los pasillos sin salida hacia la esquina inferior derecha.</li>
+      <li><b>Nivel 3 (Estación):</b> Cinemática automática donde caes al vacío escapando de la criatura.</li>
+      <li><b>Nivel 4 (La Isla):</b> Ve a la arena, presiona <b>[E]</b> sobre el Cristal Rosa y luego cruza la puerta que flota en el mar.</li>
+      <li><b>Nivel 5 (Poolrooms):</b> Avanza recto por el pasillo. Cuando empiece la persecución, mantén <b>[Shift]</b> para correr a la puerta final.</li>
+    </ul>
+  </div>
+
+  <div>
+    <button class="btn" id="start-btn" onclick="startSelectedLevel()">ENTRAR AL NIVEL</button>
+    <button class="btn" onclick="resetProgress()" style="background: #3f3f46; font-size: 13px;">RESETEAR PROGRESO</button>
+  </div>
 </div>
 
 <div id="overlay-msg">
@@ -265,6 +275,15 @@
   let skyDoorMesh = null;
   let poolroomsFakeDoor = null;
   let monsterChaseActive = false;
+
+  const OBJECTIVES = {
+    0: "Guía: Camina hacia la esquina inferior derecha para hallar el portal verde.",
+    1: "Guía: Ve hasta el extremo inferior izquierdo atravesando los muros de concreto.",
+    2: "Guía: Recorre el túnel rojo esquivando desvíos hacia la esquina inferior derecha.",
+    3: "Guía: Escapa de la entidad en la estación de trenes.",
+    4: "Guía: Busca el Cristal Rosa en la arena, presiona [E] y ve a la puerta flotante.",
+    5: "Guía: Avanza recto por el pasillo. Cuando empiece la persecución, corre con [Shift]."
+  };
 
   function updateLimboUI() {
     for (let i = 0; i <= 5; i++) {
@@ -420,6 +439,10 @@
     isTransitioning = false;
     let map = MAP_LEVEL_0;
     const hud = document.getElementById('level-hud');
+    const objElem = document.getElementById('text-objective');
+
+    objElem.textContent = OBJECTIVES[currentLevel] || "";
+    objElem.style.display = "block";
 
     if (currentLevel === 4) {
       buildLevel4Island();
@@ -534,6 +557,10 @@
       if (e.code === 'ShiftLeft') isSprinting = true;
       if (e.code === 'KeyF') flashlight.visible = !flashlight.visible;
       if (e.code === 'KeyE') handleInteraction();
+      if (e.code === 'KeyG') {
+        const obj = document.getElementById('text-objective');
+        obj.style.display = (obj.style.display === 'none') ? 'block' : 'none';
+      }
 
       if (['Digit0', 'Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5'].includes(e.code)) {
         const num = parseInt(e.code.replace('Digit', ''));
@@ -556,7 +583,8 @@
         isEventCompleted = true;
         scene.remove(randomEventItem);
         hasIslandKey = true;
-        showSubtitle("Verity: ¡Excelente! Has encontrado el núcleo. Te he entregado la Llave Celestial.", 4000, "#fef08a");
+        showSubtitle("Verity: ¡Excelente! Has encontrado el cristal. Ahora ve a la puerta flotante.", 4000, "#fef08a");
+        document.getElementById('text-objective').textContent = "Guía: Ve hacia la puerta celestial sobre el agua para avanzar.";
       }
     }
   }
@@ -574,43 +602,6 @@
     controls.unlock();
     document.getElementById('overlay-desc').textContent = msg;
     document.getElementById('overlay-msg').style.display = 'flex';
-  }
-
-  function updateNavigationArrow() {
-    const arrowElem = document.getElementById('navigation-arrow');
-    if (inCinematic || !controls.isLocked) {
-      arrowElem.style.display = 'none';
-      return;
-    }
-
-    let target = null;
-
-    if ([0, 1, 2].includes(currentLevel)) {
-      target = exitPosition;
-    } else if (currentLevel === 4) {
-      target = !hasIslandKey && randomEventItem ? randomEventItem.position : (skyDoorMesh ? skyDoorMesh.position : null);
-    } else if (currentLevel === 5) {
-      target = poolroomsFakeDoor ? poolroomsFakeDoor.position : null;
-    }
-
-    if (!target) {
-      arrowElem.style.display = 'none';
-      return;
-    }
-
-    arrowElem.style.display = 'flex';
-
-    const dist = Math.round(camera.position.distanceTo(target));
-    document.getElementById('arrow-dist').textContent = `${dist}m`;
-
-    const forward = new THREE.Vector3();
-    camera.getWorldDirection(forward);
-
-    const camAngle = Math.atan2(forward.x, forward.z);
-    const targetAngle = Math.atan2(target.x - camera.position.x, target.z - camera.position.z);
-
-    let relativeAngle = (targetAngle - camAngle) * (180 / Math.PI);
-    document.getElementById('arrow-icon').style.transform = `rotate(${relativeAngle}deg)`;
   }
 
   function startLevel3Cinematic() {
@@ -835,7 +826,6 @@
     if (inCinematic) {
       updateCinematic(delta);
     } else if (controls.isLocked) {
-      updateNavigationArrow();
 
       let speedMultiplier = 1.0;
       if (isSprinting && stamina > 0 && (moveFwd || moveBwd || moveLft || moveRgt)) {
@@ -941,4 +931,4 @@
   window.onload = init;
 </script>
 </body>
-</html>s
+</html>
