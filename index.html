@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Backrooms - Level 0, 1 & 2</title>
+  <title>The Backrooms - Edición Limbo</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body, html { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', Tahoma, monospace; background: #000; color: #fff; user-select: none; }
@@ -23,33 +23,52 @@
       border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(4px);
     }
 
+    #interaction-hint {
+      position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+      font-size: 16px; color: #fef08a; z-index: 10; font-weight: bold;
+      background: rgba(0,0,0,0.8); padding: 8px 18px; border-radius: 6px;
+      border: 1px solid #eab308; display: none; text-align: center;
+    }
+
     #flashlight-hint {
       position: absolute; top: 60px; left: 20px;
       font-size: 13px; color: #a1a1aa; z-index: 10;
       background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 4px;
     }
 
-    #menu {
+    #limbo-menu {
       position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(10, 10, 5, 0.95); display: flex;
+      background: radial-gradient(circle, #1e1b4b 0%, #09090b 100%); display: flex;
       flex-direction: column; justify-content: center; align-items: center;
       z-index: 20; text-align: center;
     }
 
-    h1 { font-size: 42px; color: #eab308; text-shadow: 0 0 10px rgba(234, 179, 8, 0.5); margin-bottom: 10px; }
-    p { font-size: 15px; color: #a1a1aa; margin-bottom: 25px; max-width: 500px; line-height: 1.5; }
-    .btn {
-      padding: 12px 28px; background: #0078d4; color: #fff; font-weight: bold;
-      font-size: 16px; border: none; cursor: pointer; border-radius: 4px;
-      transition: 0.2s; box-shadow: 0 4px 15px rgba(0,120,212,0.4);
+    h1 { font-size: 42px; color: #c084fc; text-shadow: 0 0 15px rgba(192, 132, 252, 0.6); margin-bottom: 10px; letter-spacing: 2px; }
+    p { font-size: 15px; color: #a1a1aa; margin-bottom: 25px; max-width: 550px; line-height: 1.5; }
+
+    .level-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; max-width: 600px;
     }
-    .btn:hover { background: #106ebe; transform: scale(1.03); }
+    .level-btn {
+      padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
+      color: #fff; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s;
+    }
+    .level-btn:hover:not(:disabled) { background: #6d28d9; border-color: #a855f7; transform: translateY(-2px); }
+    .level-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .level-btn.completed { border-color: #22c55e; color: #4ade80; }
+
+    .btn {
+      padding: 12px 28px; background: #6d28d9; color: #fff; font-weight: bold;
+      font-size: 16px; border: none; cursor: pointer; border-radius: 6px;
+      transition: 0.2s; box-shadow: 0 4px 15px rgba(109, 40, 217, 0.4);
+    }
+    .btn:hover { background: #7c3aed; transform: scale(1.03); }
 
     #stamina-bar-bg {
       position: absolute; bottom: 20px; left: 20px; width: 200px; height: 10px;
-      background: rgba(255,255,255,0.2); border: 1px solid #0078d4; z-index: 10; border-radius: 5px; overflow: hidden;
+      background: rgba(255,255,255,0.2); border: 1px solid #a855f7; z-index: 10; border-radius: 5px; overflow: hidden;
     }
-    #stamina-bar { width: 100%; height: 100%; background: #0078d4; }
+    #stamina-bar { width: 100%; height: 100%; background: #a855f7; }
 
     #win11-loading {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -58,46 +77,35 @@
     }
     .win11-spinner {
       width: 54px; height: 54px;
-      border: 4px solid rgba(255, 255, 255, 0.1);
-      border-top-color: #0078d4;
-      border-radius: 50%;
-      animation: spinWin11 0.8s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+      border: 4px solid rgba(255, 255, 255, 0.1); border-top-color: #a855f7;
+      border-radius: 50%; animation: spinWin11 0.8s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
     }
-    @keyframes spinWin11 {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .loading-text {
-      margin-top: 25px; font-size: 18px; color: #ffffff; letter-spacing: 1px; font-weight: 400;
-    }
+    @keyframes spinWin11 { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .loading-text { margin-top: 25px; font-size: 18px; color: #ffffff; letter-spacing: 1px; }
 
     #subtitles {
       position: fixed; bottom: 12%; left: 50%; transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.85); color: #fff; padding: 12px 24px; font-size: 20px;
+      background: rgba(0, 0, 0, 0.85); color: #fff; padding: 12px 24px; font-size: 19px;
       border-radius: 8px; display: none; z-index: 80; border: 1px solid rgba(255,255,255,0.2);
-      font-weight: 600; letter-spacing: 0.5px; text-align: center;
+      font-weight: 600; text-align: center; max-width: 80%;
     }
 
     #fade-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: #000; opacity: 0; pointer-events: none; z-index: 90;
-      transition: opacity 1.5s ease;
+      background: #000; opacity: 0; pointer-events: none; z-index: 90; transition: opacity 1.5s ease;
     }
-    #continued-screen {
+
+    #credits-screen {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       display: none; flex-direction: column; justify-content: center; align-items: center;
-      z-index: 110; color: #fff; text-align: center; background: #000; overflow: hidden;
+      z-index: 110; color: #fff; text-align: center; background: #000;
     }
-    .tbc-text {
-      font-size: 48px; font-weight: 800; letter-spacing: 8px; text-transform: uppercase;
-      color: #ef4444; text-shadow: 0 0 20px rgba(239, 68, 68, 0.8); margin-bottom: 25px;
-    }
+    .credits-title { font-size: 40px; font-weight: 800; color: #38bdf8; margin-bottom: 20px; letter-spacing: 4px; }
     .credits-box {
       margin-bottom: 30px; font-size: 16px; color: #a1a1aa; line-height: 1.8;
       border-top: 1px solid rgba(255,255,255,0.15); border-bottom: 1px solid rgba(255,255,255,0.15);
-      padding: 15px 40px; background: rgba(255,255,255,0.03); border-radius: 8px;
+      padding: 20px 40px; background: rgba(255,255,255,0.03); border-radius: 8px;
     }
-    .credits-box h3 { color: #38bdf8; font-size: 18px; margin-bottom: 8px; letter-spacing: 2px; }
 
     #overlay-msg {
       position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -112,44 +120,59 @@
 
 <div id="canvas-container"></div>
 <div id="crosshair"></div>
-<div id="level-hud">NIVEL 0: El Lobby</div>
-<div id="flashlight-hint">💡 Tecla [F] para Linterna | [Shift] para Correr</div>
+<div id="level-hud">MENÚ LIMBO</div>
+<div id="flashlight-hint">💡 Tecla [F] para Linterna | [Shift] Correr | [E] Interactuar</div>
+<div id="interaction-hint">Presiona [E] para interactuar</div>
 <div id="stamina-bar-bg"><div id="stamina-bar"></div></div>
 
 <div id="win11-loading">
   <div class="win11-spinner"></div>
-  <div class="loading-text" id="loading-text">Cargando...</div>
+  <div class="loading-text" id="loading-text">Cargando Nivel...</div>
 </div>
 
 <div id="subtitles"></div>
-
 <div id="fade-overlay"></div>
-<div id="continued-screen">
-  <div class="tbc-text">CONTINUARÁ...</div>
+
+<div id="credits-screen">
+  <div class="credits-title">LIMBO - FIN</div>
   <div class="credits-box">
-    <h3>CRÉDITOS</h3>
-    <p><b>Desarrollo & Diseño:</b> Proyecto Backrooms Web</p>
+    <p><b>Despertaste del coma...</b></p><br>
+    <p><b>Proyecto:</b> The Backrooms Web Saga</p>
+    <p><b>Historia & Niveles:</b> Nivel 0 al 5 (Poolrooms)</p>
     <p><b>Motor 3D:</b> Three.js (WebGL)</p>
-    <p><b>Niveles:</b> 0 (Lobby), 1 (Habitable), 2 (Túneles), 3 (¿La Isla?)</p>
   </div>
-  <button class="btn" onclick="location.reload()">JUGAR DE NUEVO</button>
+  <button class="btn" onclick="resetProgress()">VOLVER AL LIMBO</button>
 </div>
 
-<div id="menu">
-  <h1>THE BACKROOMS</h1>
-  <p>Explora los niveles, usa tu linterna [F] para guiarte en la oscuridad y encuentra las salidas.<br><br><b>Nivel 0:</b> El Lobby<br><b>Nivel 1:</b> Zona Habitable<br><b>Nivel 2:</b> Túneles de Mantenimiento</p>
-  <button class="btn" id="start-btn">ENTRAR</button>
+<div id="limbo-menu">
+  <h1>MENÚ DE LIMBO</h1>
+  <p>Selecciona un nivel o continúa tu viaje a través de la realidad fracturada.</p>
+  
+  <div class="level-grid">
+    <button class="level-btn" id="btn-lvl-0" onclick="selectLevel(0)">Nivel 0<br><small>El Lobby</small></button>
+    <button class="level-btn" id="btn-lvl-1" onclick="selectLevel(1)">Nivel 1<br><small>Zona Habitable</small></button>
+    <button class="level-btn" id="btn-lvl-2" onclick="selectLevel(2)">Nivel 2<br><small>Túneles</small></button>
+    <button class="level-btn" id="btn-lvl-3" onclick="selectLevel(3)">Nivel 3<br><small>Estación</small></button>
+    <button class="level-btn" id="btn-lvl-4" onclick="selectLevel(4)">Nivel 4<br><small>La Isla</small></button>
+    <button class="level-btn" id="btn-lvl-5" onclick="selectLevel(5)">Nivel 5<br><small>Poolrooms</small></button>
+  </div>
+
+  <button class="btn" id="start-btn" onclick="startSelectedLevel()">ENTRAR AL NIVEL</button>
+  <button class="btn" onclick="resetProgress()" style="margin-top: 15px; background: #3f3f46; font-size: 13px;">RESETEAR PROGRESO</button>
 </div>
 
 <div id="overlay-msg">
   <h1 id="overlay-title" style="color: #ef4444;">¡HAS SIDO ATRAPADO!</h1>
-  <p id="overlay-desc" style="margin-top: 10px;">Te has convertido en parte de la estructura.</p>
+  <p id="overlay-desc" style="margin-top: 10px;">La Entidad te atrapó en la oscuridad.</p>
   <button class="btn" onclick="location.reload()" style="margin-top: 20px;">REINTENTAR</button>
 </div>
 
 <script>
   const CELL_SIZE = 4;
   let currentLevel = 0;
+  let selectedLevelToPlay = 0;
+  
+  let completedLevels = JSON.parse(localStorage.getItem('backrooms_completed') || '[]');
 
   const MAP_LEVEL_0 = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -208,152 +231,109 @@
   let inCinematic = false;
   let cinematicTimer = 0;
   let cinematicStep = 0;
-  let verity;
+  let verity, verityMonster;
   let exitPosition = null;
   let isTransitioning = false;
 
-  function computeDistancesToExit(map) {
-    const dist = Array.from({ length: map.length }, () => Array(map[0].length).fill(Infinity));
-    const queue = [];
+  let hasIslandKey = false;
+  let randomEventItem = null;
+  let isEventCompleted = false;
+  let skyDoorMesh = null;
+  let poolroomsFakeDoor = null;
+  let monsterChaseActive = false;
+
+  function updateLimboUI() {
+    for (let i = 0; i <= 5; i++) {
+      const btn = document.getElementById(`btn-lvl-${i}`);
+      if (!btn) continue;
+      
+      const isUnlocked = i === 0 || completedLevels.includes(i - 1);
+      btn.disabled = !isUnlocked;
+      if (completedLevels.includes(i)) {
+        btn.classList.add('completed');
+      }
+    }
+
+    if (completedLevels.includes(0) && completedLevels.includes(1) && completedLevels.includes(2)) {
+      selectedLevelToPlay = 4;
+    }
     
-    for (let r = 0; r < map.length; r++) {
-      for (let c = 0; c < map[r].length; c++) {
-        if (map[r][c] === 3) {
-          dist[r][c] = 0;
-          queue.push({ r, c });
-        }
-      }
-    }
-
-    const dr = [-1, 1, 0, 0];
-    const dc = [0, 0, -1, 1];
-
-    while (queue.length > 0) {
-      const { r, c } = queue.shift();
-      for (let i = 0; i < 4; i++) {
-        const nr = r + dr[i];
-        const nc = c + dc[i];
-        if (nr >= 0 && nr < map.length && nc >= 0 && nc < map[nr].length && map[nr][nc] !== 1) {
-          if (dist[nr][nc] > dist[r][c] + 1) {
-            dist[nr][nc] = dist[r][c] + 1;
-            queue.push({ r: nr, c: nc });
-          }
-        }
-      }
-    }
-    return dist;
+    selectLevel(selectedLevelToPlay);
   }
 
-  function createExitArrowTexture() {
+  function selectLevel(lvl) {
+    selectedLevelToPlay = lvl;
+    for (let i = 0; i <= 5; i++) {
+      const btn = document.getElementById(`btn-lvl-${i}`);
+      if (btn) {
+        btn.style.outline = (i === selectedLevelToPlay) ? '2px solid #a855f7' : 'none';
+      }
+    }
+  }
+
+  function startSelectedLevel() {
+    controls.lock();
+    loadLevel(selectedLevelToPlay);
+  }
+
+  function resetProgress() {
+    localStorage.removeItem('backrooms_completed');
+    completedLevels = [];
+    location.reload();
+  }
+
+  function markLevelCompleted(lvl) {
+    if (!completedLevels.includes(lvl)) {
+      completedLevels.push(lvl);
+      localStorage.setItem('backrooms_completed', JSON.stringify(completedLevels));
+    }
+  }
+
+  function createSkyDoorTexture() {
     const canvas = document.createElement('canvas');
-    canvas.width = 256; canvas.height = 256;
+    canvas.width = 256; canvas.height = 512;
     const ctx = canvas.getContext('2d');
-    
-    ctx.fillStyle = 'rgba(6, 95, 70, 0.85)';
-    ctx.fillRect(0, 0, 256, 256);
-    ctx.strokeStyle = '#34d399';
-    ctx.lineWidth = 10;
-    ctx.strokeRect(8, 8, 240, 240);
+    const grad = ctx.createLinearGradient(0, 0, 0, 512);
+    grad.addColorStop(0, '#38bdf8');
+    grad.addColorStop(1, '#bae6fd');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 256, 512);
 
-    ctx.fillStyle = '#34d399';
-    ctx.beginPath();
-    ctx.moveTo(128, 25);
-    ctx.lineTo(205, 115);
-    ctx.lineTo(160, 115);
-    ctx.lineTo(160, 185);
-    ctx.lineTo(96, 185);
-    ctx.lineTo(96, 115);
-    ctx.lineTo(51, 115);
-    ctx.closePath();
-    ctx.fill();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.beginPath(); ctx.arc(80, 100, 40, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(140, 90, 50, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(180, 110, 35, 0, Math.PI * 2); ctx.fill();
 
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 28px Segoe UI, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('SALIDA', 128, 225);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 12;
+    ctx.strokeRect(6, 6, 244, 500);
 
     return new THREE.CanvasTexture(canvas);
   }
 
-  function createWallpaperTexture() {
+  function createPoolTileTexture() {
     const canvas = document.createElement('canvas');
     canvas.width = 256; canvas.height = 256;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#caa342';
+    ctx.fillStyle = '#e0f2fe';
     ctx.fillRect(0, 0, 256, 256);
-    ctx.strokeStyle = '#9c7b28';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#0284c7';
+    ctx.lineWidth = 4;
 
-    for (let x = 0; x < 256; x += 32) {
-      for (let y = 0; y < 256; y += 32) {
-        ctx.beginPath();
-        ctx.moveTo(x + 16, y + 2);
-        ctx.lineTo(x + 30, y + 16);
-        ctx.lineTo(x + 16, y + 30);
-        ctx.lineTo(x + 2, y + 16);
-        ctx.closePath();
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(x + 16, y + 16, 3, 0, Math.PI * 2);
-        ctx.stroke();
-      }
+    for (let i = 0; i <= 256; i += 32) {
+      ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 256); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(256, i); ctx.stroke();
     }
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(1, 1);
-    return texture;
-  }
-
-  function createCarpetTexture() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 256; canvas.height = 256;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#6b5c33';
-    ctx.fillRect(0, 0, 256, 256);
-
-    const imgData = ctx.getImageData(0, 0, 256, 256);
-    const data = imgData.data;
-    for (let i = 0; i < data.length; i += 4) {
-      const noise = (Math.random() - 0.5) * 35;
-      data[i] = Math.min(255, Math.max(0, data[i] + noise));
-      data[i+1] = Math.min(255, Math.max(0, data[i+1] + noise));
-      data[i+2] = Math.min(255, Math.max(0, data[i+2] + noise));
-    }
-    ctx.putImageData(imgData, 0, 0);
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(12, 12);
-    return texture;
-  }
-
-  function createSignTexture(text) {
-    const canvas = document.createElement('canvas');
-    canvas.width = 512; canvas.height = 128;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(0, 0, 512, 128);
-    ctx.strokeStyle = '#e2e8f0';
-    ctx.lineWidth = 6;
-    ctx.strokeRect(8, 8, 496, 112);
-    
-    ctx.fillStyle = '#f87171';
-    ctx.font = 'bold 36px Segoe UI, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(text, 256, 64);
-
-    return new THREE.CanvasTexture(canvas);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(8, 8);
+    return tex;
   }
 
   function init() {
     scene = new THREE.Scene();
 
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 150);
     scene.add(camera);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -362,13 +342,12 @@
 
     controls = new THREE.PointerLockControls(camera, document.body);
 
-    document.getElementById('start-btn').addEventListener('click', () => controls.lock());
     controls.addEventListener('lock', () => {
-      document.getElementById('menu').style.display = 'none';
+      document.getElementById('limbo-menu').style.display = 'none';
     });
     controls.addEventListener('unlock', () => {
       if (!isGameOver && !inCinematic) {
-        document.getElementById('menu').style.display = 'flex';
+        document.getElementById('limbo-menu').style.display = 'flex';
       }
     });
 
@@ -381,7 +360,7 @@
     flashlight.target.position.set(0, -0.2, -5);
     camera.add(flashlight.target);
 
-    loadLevel(0);
+    updateLimboUI();
     setupControls();
 
     window.addEventListener('resize', onWindowResize);
@@ -398,7 +377,7 @@
       loader.style.display = 'none';
       if (onComplete) onComplete();
       if (!inCinematic) controls.lock();
-    }, 2500);
+    }, 2200);
   }
 
   function clearLevel() {
@@ -406,10 +385,9 @@
     lights.forEach(light => scene.remove(light));
     if (monster) scene.remove(monster);
     if (verity) scene.remove(verity);
-    levelMeshes = [];
-    wallColliders = [];
-    lights = [];
-    exitPosition = null;
+    if (verityMonster) scene.remove(verityMonster);
+    levelMeshes = []; wallColliders = []; lights = []; exitPosition = null;
+    monsterChaseActive = false;
   }
 
   function loadLevel(levelNum) {
@@ -419,48 +397,50 @@
     let map = MAP_LEVEL_0;
     const hud = document.getElementById('level-hud');
 
+    if (currentLevel === 4) {
+      buildLevel4Island();
+      return;
+    }
+    if (currentLevel === 5) {
+      buildLevel5Poolrooms();
+      return;
+    }
+
     let wallMat, floorMat;
 
     if (currentLevel === 0) {
       map = MAP_LEVEL_0;
       scene.background = new THREE.Color(0x0a0a05);
       scene.fog = new THREE.FogExp2(0x0e0e06, 0.08);
-      ambientLight.color.setHex(0xc2b15b);
-      ambientLight.intensity = 0.15;
-      hud.textContent = "NIVEL 0: El Lobby";
-      hud.style.color = "#eab308";
+      ambientLight.color.setHex(0xc2b15b); ambientLight.intensity = 0.15;
+      hud.textContent = "NIVEL 0: El Lobby"; hud.style.color = "#eab308";
       monsterSpeed = 2.0;
 
-      const wallpaperTex = createWallpaperTexture();
-      const carpetTex = createCarpetTexture();
-      wallMat = new THREE.MeshStandardMaterial({ map: wallpaperTex, roughness: 0.8 });
-      floorMat = new THREE.MeshStandardMaterial({ map: carpetTex, roughness: 0.9 });
-
+      wallMat = new THREE.MeshStandardMaterial({ color: 0xcaa342, roughness: 0.8 });
+      floorMat = new THREE.MeshStandardMaterial({ color: 0x6b5c33, roughness: 0.9 });
     } else if (currentLevel === 1) {
       map = MAP_LEVEL_1;
       scene.background = new THREE.Color(0x020406);
       scene.fog = new THREE.FogExp2(0x05080c, 0.12);
-      ambientLight.color.setHex(0x384556);
-      ambientLight.intensity = 0.1;
-      hud.textContent = "NIVEL 1: Zona Habitable";
-      hud.style.color = "#38bdf8";
+      ambientLight.color.setHex(0x384556); ambientLight.intensity = 0.1;
+      hud.textContent = "NIVEL 1: Zona Habitable"; hud.style.color = "#38bdf8";
       monsterSpeed = 2.4;
 
-      wallMat = new THREE.MeshStandardMaterial({ color: 0x3a3f44, roughness: 0.6, metalness: 0.2 });
+      wallMat = new THREE.MeshStandardMaterial({ color: 0x3a3f44, roughness: 0.6 });
       floorMat = new THREE.MeshStandardMaterial({ color: 0x111315, roughness: 0.3 });
-
     } else if (currentLevel === 2) {
       map = MAP_LEVEL_2;
       scene.background = new THREE.Color(0x080202);
       scene.fog = new THREE.FogExp2(0x1a0505, 0.12);
-      ambientLight.color.setHex(0x552222);
-      ambientLight.intensity = 0.12;
-      hud.textContent = "NIVEL 2: Túneles de Mantenimiento";
-      hud.style.color = "#f87171";
+      ambientLight.color.setHex(0x552222); ambientLight.intensity = 0.12;
+      hud.textContent = "NIVEL 2: Túneles de Mantenimiento"; hud.style.color = "#f87171";
       monsterSpeed = 2.7;
 
       wallMat = new THREE.MeshStandardMaterial({ color: 0x2d1919, roughness: 0.4 });
       floorMat = wallMat;
+    } else if (currentLevel === 3) {
+      startLevel3Cinematic();
+      return;
     }
 
     const wallGeo = new THREE.BoxGeometry(CELL_SIZE, 3.5, CELL_SIZE);
@@ -476,11 +456,6 @@
     ceiling.position.set((map[0].length * CELL_SIZE)/2, 3.5, (map.length * CELL_SIZE)/2);
     scene.add(ceiling); levelMeshes.push(ceiling);
 
-    const exitDistances = computeDistancesToExit(map);
-    const exitArrowTex = createExitArrowTexture();
-    const dr = [-1, 1, 0, 0];
-    const dc = [0, 0, -1, 1];
-
     for (let r = 0; r < map.length; r++) {
       for (let c = 0; c < map[r].length; c++) {
         const x = c * CELL_SIZE + CELL_SIZE/2;
@@ -495,100 +470,33 @@
           camera.position.set(x, 1.6, z);
         } else if (map[r][c] === 3) {
           exitPosition = new THREE.Vector3(x, 1.6, z);
-
-          // Portal pasable (sin colisiones sólidas)
-          const exitColor = currentLevel === 0 ? 0xef4444 : (currentLevel === 1 ? 0x38bdf8 : 0x22c55e);
-          const exitMat = new THREE.MeshStandardMaterial({ 
-            color: exitColor, 
-            emissive: exitColor, 
-            emissiveIntensity: 1.5,
-            transparent: true,
-            opacity: 0.75 
-          });
+          const exitMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x22c55e, emissiveIntensity: 1.5, transparent: true, opacity: 0.75 });
           const exitPortal = new THREE.Mesh(new THREE.BoxGeometry(CELL_SIZE * 0.9, 3.5, CELL_SIZE * 0.9), exitMat);
           exitPortal.position.set(x, 1.75, z);
           scene.add(exitPortal); levelMeshes.push(exitPortal);
-
-          const exitLight = new THREE.PointLight(exitColor, 4.0, 20);
-          exitLight.position.set(x, 1.8, z);
-          scene.add(exitLight); lights.push(exitLight);
-        }
-
-        if ((map[r][c] === 0 || map[r][c] === 2) && (r + c) % 2 === 0) {
-          let minDist = exitDistances[r][c];
-          let bestR = r, bestC = c;
-
-          for (let i = 0; i < 4; i++) {
-            const nr = r + dr[i];
-            const nc = c + dc[i];
-            if (nr >= 0 && nr < map.length && nc >= 0 && nc < map[nr].length && map[nr][nc] !== 1) {
-              if (exitDistances[nr][nc] < minDist) {
-                minDist = exitDistances[nr][nc];
-                bestR = nr;
-                bestC = nc;
-              }
-            }
-          }
-
-          if (bestR !== r || bestC !== c) {
-            const arrowGeo = new THREE.PlaneGeometry(1.5, 1.5);
-            const arrowMat = new THREE.MeshStandardMaterial({ 
-              map: exitArrowTex, 
-              transparent: true, 
-              emissive: 0x34d399, 
-              emissiveIntensity: 0.6 
-            });
-            const arrowMesh = new THREE.Mesh(arrowGeo, arrowMat);
-            arrowMesh.rotation.x = -Math.PI / 2;
-            
-            const dx = (bestC * CELL_SIZE + CELL_SIZE/2) - x;
-            const dz = (bestR * CELL_SIZE + CELL_SIZE/2) - z;
-            arrowMesh.rotation.z = Math.atan2(-dx, -dz);
-            
-            arrowMesh.position.set(x, 0.02, z);
-            scene.add(arrowMesh);
-            levelMeshes.push(arrowMesh);
-          }
-        }
-
-        if (map[r][c] !== 1 && Math.random() < 0.2) {
-          const lightColor = currentLevel === 0 ? 0xfff5c0 : (currentLevel === 1 ? 0x93c5fd : 0xef4444);
-          const light = new THREE.PointLight(lightColor, currentLevel === 2 ? 1.0 : 0.6, 9);
-          light.position.set(x, 3.2, z);
-          scene.add(light);
-          lights.push(light);
         }
       }
     }
-
     createMonster();
   }
 
   function createMonster() {
     monster = new THREE.Group();
-    const bodyColor = currentLevel === 0 ? 0x050505 : (currentLevel === 1 ? 0x1e0505 : 0x000000);
-    const bodyMat = new THREE.MeshBasicMaterial({ color: bodyColor });
-    
+    const bodyMat = new THREE.MeshBasicMaterial({ color: 0x050505 });
     for (let i = 0; i < 7; i++) {
       const seg = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 3.2), bodyMat);
       seg.position.set((Math.random()-0.5)*0.4, 1.5, (Math.random()-0.5)*0.4);
       seg.rotation.z = (Math.random()-0.5)*0.5;
       monster.add(seg);
     }
-    
-    const eyeColor = currentLevel === 2 ? 0xff0000 : 0xffffff;
-    const eyeMat = new THREE.MeshBasicMaterial({ color: eyeColor });
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
     const eye1 = new THREE.Mesh(new THREE.SphereGeometry(0.06), eyeMat);
     eye1.position.set(-0.08, 2.6, 0.1);
     const eye2 = new THREE.Mesh(new THREE.SphereGeometry(0.06), eyeMat);
     eye2.position.set(0.08, 2.6, 0.1);
     monster.add(eye1, eye2);
 
-    if (currentLevel === 2) {
-      monster.position.set(CELL_SIZE * 2, 0, CELL_SIZE * 9);
-    } else {
-      monster.position.set(CELL_SIZE * 12, 0, CELL_SIZE * 9);
-    }
+    monster.position.set(CELL_SIZE * 12, 0, CELL_SIZE * 9);
     scene.add(monster);
   }
 
@@ -601,6 +509,7 @@
       if (e.code === 'KeyD') moveRgt = true;
       if (e.code === 'ShiftLeft') isSprinting = true;
       if (e.code === 'KeyF') flashlight.visible = !flashlight.visible;
+      if (e.code === 'KeyE') handleInteraction();
     });
     document.addEventListener('keyup', (e) => {
       if (e.code === 'KeyW') moveFwd = false;
@@ -611,140 +520,188 @@
     });
   }
 
-  function checkCollisions(newPos) {
-    const playerBox = new THREE.Box3().setFromCenterAndSize(
-      new THREE.Vector3(newPos.x, 1.6, newPos.z),
-      new THREE.Vector3(0.8, 1.8, 0.8)
-    );
-
-    for (let box of wallColliders) {
-      if (playerBox.intersectsBox(box)) return true;
+  function handleInteraction() {
+    if (currentLevel === 4 && !isEventCompleted && randomEventItem) {
+      if (camera.position.distanceTo(randomEventItem.position) < 3.5) {
+        isEventCompleted = true;
+        scene.remove(randomEventItem);
+        hasIslandKey = true;
+        showSubtitle("Verity: ¡Excelente! Has encontrado el núcleo. Te he entregado la Llave Celestial.", 4000, "#fef08a");
+      }
     }
-    return false;
   }
 
   function startLevel3Cinematic() {
     inCinematic = true;
     controls.unlock();
-    
-    document.getElementById('menu').style.display = 'none';
-    document.getElementById('stamina-bar-bg').style.display = 'none';
-    document.getElementById('flashlight-hint').style.display = 'none';
-    document.getElementById('crosshair').style.display = 'none';
-
     clearLevel();
 
     scene.background = new THREE.Color(0x000000);
     scene.fog = new THREE.FogExp2(0x000000, 0.1);
-    document.getElementById('level-hud').textContent = "NIVEL 3: Estación de Maquinaria";
+    document.getElementById('level-hud').textContent = "NIVEL 3: Estación";
     document.getElementById('level-hud').style.color = "#a855f7";
 
-    const wallMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
-    
-    const floor1 = new THREE.Mesh(new THREE.PlaneGeometry(10, 20), wallMat);
-    floor1.rotation.x = -Math.PI / 2;
-    floor1.position.set(0, 0, -10);
-    scene.add(floor1); levelMeshes.push(floor1);
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 20), new THREE.MeshStandardMaterial({ color: 0x111111 }));
+    floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, -10);
+    scene.add(floor); levelMeshes.push(floor);
 
-    const light = new THREE.PointLight(0xa855f7, 2, 25);
-    light.position.set(0, 3, -10);
-    scene.add(light); lights.push(light);
+    camera.position.set(0, 1.6, 0); camera.rotation.set(0, 0, 0);
+    createMonster(); monster.position.set(0, 0, -18);
 
-    camera.position.set(0, 1.6, 0);
-    camera.rotation.set(0, 0, 0);
-
-    createMonster();
-    monster.position.set(0, 0, -18);
-
-    cinematicStep = 1;
-    cinematicTimer = performance.now();
+    cinematicStep = 1; cinematicTimer = performance.now();
   }
 
-  function buildEpsteinIslandScene() {
+  function buildLevel4Island() {
     clearLevel();
+    currentLevel = 4;
+    hasIslandKey = false;
+    isEventCompleted = false;
 
     scene.background = new THREE.Color(0x38bdf8);
-    scene.fog = new THREE.FogExp2(0x7dd3fc, 0.015);
+    scene.fog = new THREE.FogExp2(0x7dd3fc, 0.012);
 
-    ambientLight.color.setHex(0xffffff);
-    ambientLight.intensity = 0.85;
-
+    ambientLight.color.setHex(0xffffff); ambientLight.intensity = 0.9;
     const sun = new THREE.DirectionalLight(0xfffaed, 1.3);
-    sun.position.set(20, 40, 20);
-    scene.add(sun); lights.push(sun);
+    sun.position.set(20, 40, 20); scene.add(sun); lights.push(sun);
 
-    const ocean = new THREE.Mesh(
-      new THREE.PlaneGeometry(300, 300),
-      new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.1, metalness: 0.3 })
-    );
-    ocean.rotation.x = -Math.PI / 2;
-    ocean.position.y = -0.5;
+    const hud = document.getElementById('level-hud');
+    hud.textContent = "NIVEL 4: La Isla de Jeffrey"; hud.style.color = "#38bdf8";
+
+    const ocean = new THREE.Mesh(new THREE.PlaneGeometry(300, 300), new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.1 }));
+    ocean.rotation.x = -Math.PI / 2; ocean.position.y = -0.5;
     scene.add(ocean); levelMeshes.push(ocean);
 
-    const island = new THREE.Mesh(
-      new THREE.CylinderGeometry(25, 35, 3, 32),
-      new THREE.MeshStandardMaterial({ color: 0xfde047, roughness: 0.9 })
-    );
+    const island = new THREE.Mesh(new THREE.CylinderGeometry(25, 35, 3, 32), new THREE.MeshStandardMaterial({ color: 0xfde047, roughness: 0.9 }));
     island.position.set(0, -1.5, 0);
     scene.add(island); levelMeshes.push(island);
 
-    const buildingGroup = new THREE.Group();
-    const wallMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.5 });
-    const blueDomeMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.3 });
-
-    const baseBuilding = new THREE.Mesh(new THREE.BoxGeometry(12, 6, 12), wallMat);
-    baseBuilding.position.set(0, 3, 0);
-
-    const dome = new THREE.Mesh(new THREE.SphereGeometry(4, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2), blueDomeMat);
-    dome.position.set(0, 6, 0);
-
-    buildingGroup.add(baseBuilding, dome);
-    buildingGroup.position.set(0, 0, -20);
-    scene.add(buildingGroup); levelMeshes.push(buildingGroup);
-
-    const signTex = createSignTexture("ISLA DE EPSTEIN");
-    const signMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(8, 2),
-      new THREE.MeshStandardMaterial({ map: signTex, side: THREE.DoubleSide })
-    );
-    signMesh.position.set(0, 3.5, -10);
-    scene.add(signMesh); levelMeshes.push(signMesh);
-
-    const poleMat = new THREE.MeshStandardMaterial({ color: 0x475569 });
-    const pole1 = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 3), poleMat);
-    pole1.position.set(-3.5, 1.5, -10);
-    const pole2 = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 3), poleMat);
-    pole2.position.set(3.5, 1.5, -10);
-    scene.add(pole1, pole2); levelMeshes.push(pole1, pole2);
-
-    for (let i = 0; i < 5; i++) {
-      const palm = new THREE.Group();
-      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 5), new THREE.MeshStandardMaterial({ color: 0x78350f }));
-      trunk.position.y = 2.5;
-      const leaves = new THREE.Mesh(new THREE.ConeGeometry(3, 1.5, 6), new THREE.MeshStandardMaterial({ color: 0x15803d }));
-      leaves.position.y = 5;
-      palm.add(trunk, leaves);
-
-      const angle = (i / 5) * Math.PI * 2;
-      palm.position.set(Math.cos(angle) * 16, 0, Math.sin(angle) * 16 - 5);
-      scene.add(palm); levelMeshes.push(palm);
-    }
-
-    const verityGeo = new THREE.SphereGeometry(0.6, 32, 32);
-    const verityMat = new THREE.MeshStandardMaterial({ 
-      color: 0xffea00, 
-      emissive: 0xffea00, 
-      emissiveIntensity: 0.9,
-      roughness: 0.1
-    });
-    verity = new THREE.Mesh(verityGeo, verityMat);
-    
-    const verityLight = new THREE.PointLight(0xffea00, 3, 12);
-    verity.add(verityLight);
-    
-    verity.position.set(0, 1.8, 7);
-    verity.visible = false;
+    // NPC Verity
+    verity = new THREE.Mesh(new THREE.SphereGeometry(0.7, 32, 32), new THREE.MeshStandardMaterial({ color: 0xffea00, emissive: 0xffea00, emissiveIntensity: 0.8 }));
+    verity.position.set(0, 1.8, -5);
     scene.add(verity); levelMeshes.push(verity);
+
+    // Evento Random: Cristal en la playa
+    randomEventItem = new THREE.Mesh(new THREE.OctahedronGeometry(0.6), new THREE.MeshStandardMaterial({ color: 0xec4899, emissive: 0xec4899, emissiveIntensity: 1.0 }));
+    randomEventItem.position.set(14, 1.2, 10);
+    scene.add(randomEventItem); levelMeshes.push(randomEventItem);
+
+    // Puerta con forma de Cielo en el mar
+    const skyDoorTex = createSkyDoorTexture();
+    skyDoorMesh = new THREE.Mesh(new THREE.BoxGeometry(2.5, 4.5, 0.3), new THREE.MeshStandardMaterial({ map: skyDoorTex, emissive: 0xffffff, emissiveIntensity: 0.3 }));
+    skyDoorMesh.position.set(0, 1.8, -35);
+    scene.add(skyDoorMesh); levelMeshes.push(skyDoorMesh);
+
+    camera.position.set(0, 1.6, 5);
+
+    showSubtitle("Verity: Hola viajero... Para cruzar la puerta del mar, busca el Cristal Rosa en la playa y presiona [E].", 6000, "#fef08a");
+  }
+
+  function buildLevel5Poolrooms() {
+    clearLevel();
+    currentLevel = 5;
+    monsterChaseActive = false;
+
+    scene.background = new THREE.Color(0xe0f2fe);
+    scene.fog = new THREE.FogExp2(0xbae6fd, 0.02);
+
+    ambientLight.color.setHex(0xffffff); ambientLight.intensity = 0.8;
+    const poolTex = createPoolTileTexture();
+
+    const hud = document.getElementById('level-hud');
+    hud.textContent = "NIVEL 5: Poolrooms (Zona Pacífica)"; hud.style.color = "#0284c7";
+
+    const corridorMat = new THREE.MeshStandardMaterial({ map: poolTex, roughness: 0.2 });
+
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(16, 120), corridorMat);
+    floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, -50);
+    scene.add(floor); levelMeshes.push(floor);
+
+    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(16, 120), corridorMat);
+    ceiling.rotation.x = Math.PI / 2; ceiling.position.set(0, 5, -50);
+    scene.add(ceiling); levelMeshes.push(ceiling);
+
+    const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(120, 5), corridorMat);
+    leftWall.rotation.y = Math.PI / 2; leftWall.position.set(-8, 2.5, -50);
+    scene.add(leftWall); levelMeshes.push(leftWall);
+
+    const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(120, 5), corridorMat);
+    rightWall.rotation.y = -Math.PI / 2; rightWall.position.set(8, 2.5, -50);
+    scene.add(rightWall); levelMeshes.push(rightWall);
+
+    // Agua
+    const water = new THREE.Mesh(new THREE.PlaneGeometry(16, 120), new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.6, roughness: 0.1 }));
+    water.rotation.x = -Math.PI / 2; water.position.set(0, 0.2, -50);
+    scene.add(water); levelMeshes.push(water);
+
+    // Puerta Falsa al final
+    const skyDoorTex = createSkyDoorTexture();
+    poolroomsFakeDoor = new THREE.Mesh(new THREE.BoxGeometry(3, 4.5, 0.2), new THREE.MeshStandardMaterial({ map: skyDoorTex }));
+    poolroomsFakeDoor.position.set(0, 2.25, -109);
+    scene.add(poolroomsFakeDoor); levelMeshes.push(poolroomsFakeDoor);
+
+    camera.position.set(0, 1.6, 5);
+
+    // Verity Monstruo (Oculto al inicio)
+    verityMonster = new THREE.Group();
+    const bodyMat = new THREE.MeshBasicMaterial({ color: 0x990000 });
+    const seg = new THREE.Mesh(new THREE.SphereGeometry(2.5, 16, 16), bodyMat);
+    verityMonster.add(seg);
+    const redEye = new THREE.Mesh(new THREE.SphereGeometry(0.5), new THREE.MeshBasicMaterial({ color: 0xffff00 }));
+    redEye.position.set(0, 0.5, 2.2);
+    verityMonster.add(redEye);
+    verityMonster.position.set(0, 2.5, 10);
+    verityMonster.visible = false;
+    scene.add(verityMonster);
+  }
+
+  function startPoolroomsChaseCinematic() {
+    inCinematic = true;
+    monsterChaseActive = true;
+    verityMonster.visible = true;
+    hudUpdate("NIVEL 5: ¡ESCAPA DE VERITY!", "#ef4444");
+
+    showSubtitle("Verity: ¡NUNCA SALDRÁS DE AQUÍ!", 3000, "#ef4444");
+    
+    setTimeout(() => {
+      inCinematic = false;
+    }, 1800);
+  }
+
+  function startHospitalEndingCinematic() {
+    inCinematic = true;
+    controls.unlock();
+    clearLevel();
+
+    scene.background = new THREE.Color(0xffffff);
+    scene.fog = new THREE.FogExp2(0xffffff, 0.05);
+
+    const ceilingMat = new THREE.MeshBasicMaterial({ color: 0xe2e8f0 });
+    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), ceilingMat);
+    ceiling.position.set(0, 3, 0); ceiling.rotation.x = Math.PI / 2;
+    scene.add(ceiling);
+
+    const lightStrip = new THREE.Mesh(new THREE.PlaneGeometry(1, 6), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    lightStrip.position.set(0, 2.95, 0); lightStrip.rotation.x = Math.PI / 2;
+    scene.add(lightStrip);
+
+    camera.position.set(0, 0.8, 0);
+    camera.rotation.set(Math.PI / 2.5, 0, 0);
+
+    cinematicStep = 10;
+    cinematicTimer = performance.now();
+  }
+
+  function showSubtitle(text, duration = 3000, color = "#fff") {
+    const subtitles = document.getElementById('subtitles');
+    subtitles.style.display = 'block';
+    subtitles.style.color = color;
+    subtitles.textContent = text;
+    setTimeout(() => { subtitles.style.display = 'none'; }, duration);
+  }
+
+  function hudUpdate(text, color) {
+    const hud = document.getElementById('level-hud');
+    hud.textContent = text; hud.style.color = color;
   }
 
   function updateCinematic(delta) {
@@ -752,81 +709,43 @@
     const subtitles = document.getElementById('subtitles');
 
     if (cinematicStep === 1) {
-      subtitles.style.display = 'block';
-      subtitles.style.color = '#fff';
-      subtitles.textContent = "Personaje: ¿En dónde estoy...?";
-      
-      if (elapsed > 2.0) {
-        cinematicStep = 2;
-        cinematicTimer = performance.now();
-      }
+      showSubtitle("Personaje: ¿En dónde estoy...?", 2000);
+      if (elapsed > 2.0) { cinematicStep = 2; cinematicTimer = performance.now(); }
     } else if (cinematicStep === 2) {
-      subtitles.textContent = "Personaje: ¡¿PERO QUÉ ES ESO?!";
+      showSubtitle("Personaje: ¡¿PERO QUÉ ES ESO?!", 2000);
       monster.position.z += 12 * delta;
-
-      if (monster.position.z > -6) {
-        cinematicStep = 3;
-        cinematicTimer = performance.now();
-      }
+      if (monster.position.z > -6) { cinematicStep = 3; cinematicTimer = performance.now(); }
     } else if (cinematicStep === 3) {
-      subtitles.textContent = "Personaje: ¡AAAAHHH!";
+      showSubtitle("Personaje: ¡AAAAHHH!", 2000);
       camera.rotation.y = THREE.MathUtils.lerp(camera.rotation.y, Math.PI, 0.1);
       camera.position.z += 10 * delta;
-
-      if (camera.position.z > 3.0) {
-        cinematicStep = 4;
-        cinematicTimer = performance.now();
-      }
+      if (camera.position.z > 3.0) { cinematicStep = 4; cinematicTimer = performance.now(); }
     } else if (cinematicStep === 4) {
-      subtitles.textContent = "Personaje: ¡¡¡ME CAIGOOO!!!";
+      showSubtitle("Personaje: ¡¡¡ME CAIGOOO!!!", 2000);
       camera.position.y -= 35 * delta;
-      
-      if (elapsed > 0.6) {
-        document.getElementById('fade-overlay').style.opacity = '1';
-      }
-
+      if (elapsed > 0.6) document.getElementById('fade-overlay').style.opacity = '1';
       if (elapsed > 1.5) {
-        buildEpsteinIslandScene();
-        camera.position.set(0, 1.6, 12);
-        camera.rotation.set(0, Math.PI, 0); 
         document.getElementById('fade-overlay').style.opacity = '0';
-        document.getElementById('level-hud').textContent = "ISLA DE EPSTEIN";
-        document.getElementById('level-hud').style.color = "#38bdf8";
-
-        cinematicStep = 5;
-        cinematicTimer = performance.now();
+        markLevelCompleted(2);
+        markLevelCompleted(3);
+        inCinematic = false;
+        loadLevel(4);
+        controls.lock();
       }
-    } else if (cinematicStep === 5) {
-      subtitles.textContent = "Personaje: ¿Una isla...? ¿Dónde caí?";
-
-      if (elapsed > 2.5) {
-        cinematicStep = 6;
-        cinematicTimer = performance.now();
-      }
-    } else if (cinematicStep === 6) {
-      camera.rotation.y = THREE.MathUtils.lerp(camera.rotation.y, 0, 0.04);
+    } else if (cinematicStep === 10) {
+      // Cinemática Final del Hospital
+      subtitles.style.display = 'block';
+      subtitles.style.color = '#0284c7';
       
-      if (verity) {
-        verity.visible = true;
-        verity.position.y = 1.8 + Math.sin(performance.now() * 0.004) * 0.25;
-      }
-
-      if (elapsed < 1.8) {
-        subtitles.style.color = '#fff';
-        subtitles.textContent = "Personaje: Espera... ¿Qué es esa luz?";
+      if (elapsed < 3.0) {
+        subtitles.textContent = "Doctor: ¡Está despertando! Monitoricen sus signos vitales...";
+      } else if (elapsed < 6.0) {
+        subtitles.textContent = "Familiar: ¡Gracias a Dios! Llevaba meses en coma tras el accidente...";
+      } else if (elapsed < 9.0) {
+        subtitles.textContent = "Personaje: (Todo fue... una ilusión del Limbo...)";
       } else {
-        subtitles.style.color = '#fef08a';
-        subtitles.textContent = "Verity: Hola amigo, bienvenido a la isla de Jeffrey.";
-      }
-
-      if (elapsed > 5.5) {
-        document.getElementById('fade-overlay').style.opacity = '1';
-      }
-
-      if (elapsed > 7.0) {
         subtitles.style.display = 'none';
-        document.getElementById('continued-screen').style.display = 'flex';
-        cinematicStep = 7;
+        document.getElementById('credits-screen').style.display = 'flex';
       }
     }
   }
@@ -868,28 +787,63 @@
       controls.moveForward(-velocity.z * delta);
       if (checkCollisions(camera.position)) camera.position.z = oldPos.z;
 
-      if (Math.random() < 0.05 && lights.length > 0) {
-        const l = lights[Math.floor(Math.random() * lights.length)];
-        l.intensity = Math.random() < 0.4 ? 0.0 : 1.0;
+      // Eventos del Nivel 4 (Isla)
+      if (currentLevel === 4) {
+        if (!isEventCompleted && randomEventItem) {
+          randomEventItem.rotation.y += delta * 2;
+          const dist = camera.position.distanceTo(randomEventItem.position);
+          document.getElementById('interaction-hint').style.display = (dist < 3.5) ? 'block' : 'none';
+        } else {
+          document.getElementById('interaction-hint').style.display = 'none';
+        }
+
+        if (hasIslandKey && camera.position.distanceTo(skyDoorMesh.position) < 3.0) {
+          markLevelCompleted(4);
+          showWin11Loading("Entrando a los Poolrooms...", () => loadLevel(5));
+        }
       }
 
-      monster.lookAt(camera.position.x, 0, camera.position.z);
-      monster.translateZ(monsterSpeed * delta);
+      // Eventos del Nivel 5 (Poolrooms)
+      if (currentLevel === 5) {
+        if (!monsterChaseActive && camera.position.z < -45) {
+          startPoolroomsChaseCinematic();
+        }
 
-      if (monster.position.distanceTo(camera.position) < 1.5) {
-        endGame(false);
+        if (monsterChaseActive) {
+          verityMonster.position.z -= 18.0 * delta;
+          verityMonster.position.x = THREE.MathUtils.lerp(verityMonster.position.x, camera.position.x, 0.05);
+
+          // Si el jugador llega a la puerta falsa del final
+          if (camera.position.z < -105) {
+            inCinematic = true;
+            poolroomsFakeDoor.material.color.setHex(0x111111); // Se vuelve pared de concreto
+            showSubtitle("¡LA PUERTA ES FALSA!", 2000, "#ef4444");
+
+            setTimeout(() => {
+              document.getElementById('fade-overlay').style.opacity = '1';
+              setTimeout(() => {
+                document.getElementById('fade-overlay').style.opacity = '0';
+                markLevelCompleted(5);
+                startHospitalEndingCinematic();
+              }, 1200);
+            }, 1000);
+          }
+        }
       }
 
-      // Detector de proximidad a la salida
+      // Persecución de monstruos estándar (0, 1, 2)
+      if (monster && currentLevel <= 2) {
+        monster.lookAt(camera.position.x, 0, camera.position.z);
+        monster.translateZ(monsterSpeed * delta);
+        if (monster.position.distanceTo(camera.position) < 1.5) endGame();
+      }
+
+      // Detector de salidas para niveles 0, 1, 2
       if (exitPosition && !isTransitioning && camera.position.distanceTo(exitPosition) < 2.2) {
         isTransitioning = true;
-        if (currentLevel === 0) {
-          showWin11Loading("Cargando Nivel 1...", () => loadLevel(1));
-        } else if (currentLevel === 1) {
-          showWin11Loading("Cargando Nivel 2...", () => loadLevel(2));
-        } else if (currentLevel === 2) {
-          showWin11Loading("Cargando Nivel 3...", () => startLevel3Cinematic());
-        }
+        markLevelCompleted(currentLevel);
+        const nextLvl = currentLevel + 1;
+        showWin11Loading(`Cargando Nivel ${nextLvl}...`, () => loadLevel(nextLvl));
       }
     }
 
@@ -897,13 +851,21 @@
     renderer.render(scene, camera);
   }
 
-  function endGame(won) {
+  function checkCollisions(newPos) {
+    const playerBox = new THREE.Box3().setFromCenterAndSize(
+      new THREE.Vector3(newPos.x, 1.6, newPos.z),
+      new THREE.Vector3(0.8, 1.8, 0.8)
+    );
+    for (let box of wallColliders) {
+      if (playerBox.intersectsBox(box)) return true;
+    }
+    return false;
+  }
+
+  function endGame() {
     isGameOver = true;
     controls.unlock();
-    const overlay = document.getElementById('overlay-msg');
-    document.getElementById('overlay-title').textContent = "¡HAS SIDO ATRAPADO!";
-    document.getElementById('overlay-desc').textContent = "La Entidad te alcanzó en la oscuridad.";
-    overlay.style.display = 'flex';
+    document.getElementById('overlay-msg').style.display = 'flex';
   }
 
   function onWindowResize() {
